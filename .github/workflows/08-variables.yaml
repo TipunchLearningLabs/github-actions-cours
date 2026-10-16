@@ -11,7 +11,7 @@ env:
 
 jobs:
   echo:
-    runs-on: ubuntu+latest
+    runs-on: ubuntu-latest
     env:
       JOB_VAR: 'I am a job env var'
       OVERWRITTEN: 'I have been overwritten at the job level'
@@ -32,7 +32,7 @@ jobs:
       run: |
          echo "Step env var: ${{ env.OVERWRITTEN }}"
   echo2:
-    runs-on: ubuntu+latest
+    runs-on: ubuntu-latest
     steps:
     - name: Print Variables
       run: |
@@ -46,12 +46,12 @@ jobs:
     - name: Print Prod Variables
       run: |
         echo "Org var: ${{ vars.ORG_VAR }}"
-        eccho "Org overwritten var: ${{ vars.OVERWRITTEN_VAR}}"
-        echo "Repo var: ${{ vars.REPOSITORY_VAR }}
+        echo "Org overwritten var: ${{ vars.OVERWRITTEN_VAR }}"
+        echo "Repo var: ${{ vars.REPOSITORY_VAR }}"
         echo "Environment var: ${{ vars.TARGET_VAR }}"
   echo-undefined:
     runs-on: ubuntu-latest
     steps:
     - name: Print Undefined Variables
       run: |
-        eccho "Org overwritten var: ${{ env.UNDEFINED_VAR }}"
+        echo "Org overwritten var: ${{ env.UNDEFINED_VAR }}"
