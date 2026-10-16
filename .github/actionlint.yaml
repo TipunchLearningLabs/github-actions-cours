@@ -1,0 +1,5 @@
+paths:
+  # Course exercise: intentionally interpolates the PR title inline to demonstrate expressions
+  .github/workflows/09-functions.yaml:
+    ignore:
+      - '"github\.event\.pull_request\.title" is potentially untrusted'
