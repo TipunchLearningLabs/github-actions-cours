@@ -4,13 +4,15 @@ on:
   workflow_dispatch:
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout Code
-              uses: actions/checkout@v7
-            - name: Printing Folders
-              run: ls
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Printing Folders
+        run: ls
+
     # 0. Checkout the code from the repository
     # 1. Install deps our react vite application$
     # 2. Execute automated tests
