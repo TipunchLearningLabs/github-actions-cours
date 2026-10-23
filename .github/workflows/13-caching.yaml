@@ -7,9 +7,6 @@ on:
         description: "Whether to execute cache step"
         type: boolean
         default: true
-  push:
-    branches:
-      - feat/github-actions
 
 jobs:
 
