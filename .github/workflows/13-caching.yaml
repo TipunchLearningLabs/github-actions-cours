@@ -7,6 +7,19 @@ on:
         description: "Whether to execute cache step"
         type: boolean
         default: true
+      node-version:
+        description: Node version
+        type: choice
+        options:
+          - 24
+          - 25
+          - 26
+      pnpm-version:
+        description: PNPM version
+        type: choice
+        options:
+          - 11.x
+          - 12.x
 
 jobs:
 
@@ -21,11 +34,11 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: '12.x'
+          version: ${{ inputs.pnpm-version }}
       - name: Setup node
         uses: actions/setup-node@v7
         with:
-          node-version: '26.x'
+          node-version: ${{ inputs.node-version }}
       - name: Install dependencies
         run: pnpm ci
       - name: Testing
