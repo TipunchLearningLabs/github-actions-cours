@@ -11,9 +11,9 @@ on:
         description: Node version
         type: choice
         options:
-          - 24
-          - 25
-          - 26
+          - 24.x
+          - 25.x
+          - 26.x
       pnpm-version:
         description: PNPM version
         type: choice
