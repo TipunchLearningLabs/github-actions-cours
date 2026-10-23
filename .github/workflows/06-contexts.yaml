@@ -3,11 +3,11 @@ run-name: 06 - Contexts | DEBUG - ${{ inputs.debug }}
 
 on:
   workflow_dispatch:
-
-      inputs:
-        debug:
-          type: boolean
-          default: false
+    inputs:
+      debug:
+        type: boolean
+        default: false
+        description: 'Debug mode'
 
 env:
   MY_WORKFLOW_VAR: 'workflow'
@@ -20,34 +20,38 @@ jobs:
       MY_JOB_VAR: 'job'
       MY_OVERWRITTEN_VAR: 'job'
     steps:
-    - name: Display Information
-      run: |
-        echo "Event name: ${{ github.event_name }}"
-        echo "Ref: ${{ github.ref }}"
-        echo "SHA: ${{ github.sha }}"
-        echo "Actor: ${{ github.actor }}"
-        echo "Workflow: ${{ github.workflow }}"
-        echo "Run ID: ${{ github.run_id }}"
-        echo "Run number: ${{ github.run_number }}"
-    - name: Retrieve Variable
-      env:
-        MY_VAR: ${{ vars.MY_VAR }}
-      run: |
+      - name: Display Information
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "SHA: ${{ github.sha }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Workflow: ${{ github.workflow }}"
+          echo "Run ID: ${{ github.run_id }}"
+          echo "Run number: ${{ github.run_number }}"
+
+      - name: Retrieve Variable
+        env:
+          MY_VAR: ${{ vars.MY_VAR }}
+        run: |
           echo "$MY_VAR"
-    - name: Print Env Variables
-      env:
-        MY_OVERWRITTEN_VAR: 'step'
-      run: |
-        echo "Workflow env: ${{ env.MY_WORKFLOW_VAR }}"
-        echo "Overwritten env: ${{ env.MY_OVERWRITTEN_VAR }}"
-    - name: Print Env Variables
-      run: |
-        echo "Workflow env: ${{ env.MY_WORKFLOW_VAR }}"
-        echo "Overwritten env: ${{ env.MY_OVERWRITTEN_VAR }}"
+
+      - name: Print Env Variables
+        env:
+          MY_OVERWRITTEN_VAR: 'step'
+        run: |
+          echo "Workflow env: ${{ env.MY_WORKFLOW_VAR }}"
+          echo "Overwritten env: ${{ env.MY_OVERWRITTEN_VAR }}"
+
+      - name: Print Env Variables
+        run: |
+          echo "Workflow env: ${{ env.MY_WORKFLOW_VAR }}"
+          echo "Overwritten env: ${{ env.MY_OVERWRITTEN_VAR }}"
+
   echo-data2:
     runs-on: ubuntu-latest
     steps:
-    - name: Print Env Variables
-      run: |
+     - name: Print Env Variables
+       run: |
         echo "Workflow env: $MY_WORKFLOW_VAR"
         echo "Overwritten env: $MY_OVERWRITTEN"

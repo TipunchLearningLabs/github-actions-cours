@@ -1,0 +1,36 @@
+name:  13 - Using Caching
+
+on:
+  workflow_dispatch:
+    inputs:
+      use-cache:
+        description: "Whether to execute cache step"
+        type: boolean
+        default: true
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 13-caching/react-app
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '12.x'
+      - name: Setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '26.x'
+      - name: Install dependencies
+        run: pnpm ci
+      - name: Testing
+        run: pnpm test --run
+      - name: Building
+        run: pnpm build
+      - name: Deploying to nonprod
+        run: echo "Deploying to nonprod"
