@@ -6,13 +6,24 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 13-caching/react-app
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
-
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '26.x'
+      - name: Setup Pnpm
+        uses: pnpm/setup@v3
+        with:
+          version: 12
+          runtime: node@26
+      - name: Install Dependencies
+        run: pnpm ci
+      - name: Run Unit Tests
+        run: pnpm test --run
       - name: Printing Folders
         run: ls
-
-    # 0. Checkout the code from the repository
-    # 1. Install deps our react vite application$
-    # 2. Execute automated tests
