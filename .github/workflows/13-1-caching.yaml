@@ -1,4 +1,4 @@
-name:  13-1 - Using Caching
+name: 13-1 - Using Caching
 
 on:
   workflow_dispatch:
@@ -34,18 +34,23 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
         with:
           version: ${{ inputs.pnpm-version }}
+          run_install: false
+
       - name: Setup node
         uses: actions/setup-node@v7
         with:
           node-version: ${{ inputs.node-version }}
+
       - name: Calculate cache key
         id: cache-key
         run: |
-          echo "CACHE_KEY=deps-node-module-${{ hashFiles('13-caching/react-app/package-lock.json') }}" >> "$GITHUB_OUTPUT"
+          echo "CACHE_KEY=deps-${{ runner.os }}-node-${{ inputs.node-version }}-pnpm-${{ inputs.pnpm-version }}-${{ hashFiles('13-caching/react-app/pnpm-lock.yaml') }}" >> "$GITHUB_OUTPUT"
+
       - name: Download cached dependencies
         uses: actions/cache@v6
         if: ${{ inputs.use-cache }}
@@ -53,6 +58,7 @@ jobs:
         with:
           path: 13-caching/react-app/node_modules
           key: ${{ steps.cache-key.outputs.CACHE_KEY }}
+
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: pnpm ci
@@ -67,14 +73,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
         with:
           version: ${{ inputs.pnpm-version }}
+          run_install: false
+
       - name: Setup node
         uses: actions/setup-node@v7
         with:
           node-version: ${{ inputs.node-version }}
+
       - name: Download cached dependencies
         uses: actions/cache@v6
         if: ${{ inputs.use-cache }}
@@ -82,11 +92,16 @@ jobs:
         with:
           path: 13-caching/react-app/node_modules
           key: ${{ needs.install-deps.outputs.deps-cache-key }}
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: pnpm ci
+
       - name: Testing
         run: pnpm test --run
-      - name: Linting
-        run: pnpm lint --run
 
+      - name: Linting
+        run: pnpm lint
 
   build:
     runs-on: ubuntu-latest
@@ -98,14 +113,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
         with:
           version: ${{ inputs.pnpm-version }}
+          run_install: false
+
       - name: Setup node
         uses: actions/setup-node@v7
         with:
           node-version: ${{ inputs.node-version }}
+
       - name: Download cached dependencies
         uses: actions/cache@v6
         if: ${{ inputs.use-cache }}
@@ -113,10 +132,13 @@ jobs:
         with:
           path: 13-caching/react-app/node_modules
           key: ${{ needs.install-deps.outputs.deps-cache-key }}
+
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: pnpm ci
+
       - name: Building
         run: pnpm build
+
       - name: Deploying to nonprod
         run: echo "Deploying to nonprod"
