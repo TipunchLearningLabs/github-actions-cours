@@ -8,6 +8,7 @@ jobs:
     name: ${{ matrix.os }}-${{ matrix.node-version }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         node-version:
           - 25.x
