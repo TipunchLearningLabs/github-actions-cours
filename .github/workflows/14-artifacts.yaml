@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: 13-caching/react-app
+        working-directory: 14-caching/react-app
     outputs:
       deps-cache-key: ${{ steps.cache-key.outputs.CACHE_KEY }}
     steps:
@@ -52,14 +52,14 @@ jobs:
       - name: Calculate cache key
         id: cache-key
         run: |
-          echo "CACHE_KEY=deps-${{ runner.os }}-node-${{ inputs.node-version }}-pnpm-${{ inputs.pnpm-version }}-${{ hashFiles('13-caching/react-app/pnpm-lock.yaml') }}" >> "$GITHUB_OUTPUT"
+          echo "CACHE_KEY=deps-${{ runner.os }}-node-${{ inputs.node-version }}-pnpm-${{ inputs.pnpm-version }}-${{ hashFiles('14-caching/react-app/pnpm-lock.yaml') }}" >> "$GITHUB_OUTPUT"
 
       - name: Download cached dependencies
         uses: actions/cache@v6
         if: ${{ inputs.use-cache }}
         id: cache
         with:
-          path: 13-caching/react-app/node_modules
+          path: 14-caching/react-app/node_modules
           key: ${{ steps.cache-key.outputs.CACHE_KEY }}
 
       - name: Install dependencies
@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: 13-caching/react-app
+        working-directory: 14-caching/react-app
     needs:
       - install-deps
     steps:
@@ -93,7 +93,7 @@ jobs:
         if: ${{ inputs.use-cache }}
         id: cache
         with:
-          path: 13-caching/react-app/node_modules
+          path: 14-caching/react-app/node_modules
           key: ${{ needs.install-deps.outputs.deps-cache-key }}
 
       - name: Install dependencies
@@ -116,7 +116,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: 13-caching/react-app
+        working-directory: 14-caching/react-app
     needs:
       - install-deps
     steps:
@@ -139,7 +139,7 @@ jobs:
         if: ${{ inputs.use-cache }}
         id: cache
         with:
-          path: 13-caching/react-app/node_modules
+          path: 14-caching/react-app/node_modules
           key: ${{ needs.install-deps.outputs.deps-cache-key }}
 
       - name: Install dependencies
