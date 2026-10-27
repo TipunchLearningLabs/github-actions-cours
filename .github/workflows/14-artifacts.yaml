@@ -1,0 +1,167 @@
+name: 14 - Working with Artifacts
+
+on:
+  workflow_dispatch:
+    inputs:
+      use-cache:
+        description: "Whether to execute cache step"
+        type: boolean
+        default: true
+      node-version:
+        description: Node version
+        type: choice
+        default: '26.x'
+        options:
+          - 24.x
+          - 25.x
+          - 26.x
+      pnpm-version:
+        description: PNPM version
+        type: choice
+        default: '12.x'
+        options:
+          - 11.x
+          - 12.x
+env:
+  build-artifact-key: app-${{ github.sha }}
+  test-report-key: test-coverage-${{ github.sha }}
+
+jobs:
+  install-deps:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 13-caching/react-app
+    outputs:
+      deps-cache-key: ${{ steps.cache-key.outputs.CACHE_KEY }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: ${{ inputs.pnpm-version }}
+          run_install: false
+
+      - name: Setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Calculate cache key
+        id: cache-key
+        run: |
+          echo "CACHE_KEY=deps-${{ runner.os }}-node-${{ inputs.node-version }}-pnpm-${{ inputs.pnpm-version }}-${{ hashFiles('13-caching/react-app/pnpm-lock.yaml') }}" >> "$GITHUB_OUTPUT"
+
+      - name: Download cached dependencies
+        uses: actions/cache@v6
+        if: ${{ inputs.use-cache }}
+        id: cache
+        with:
+          path: 13-caching/react-app/node_modules
+          key: ${{ steps.cache-key.outputs.CACHE_KEY }}
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: pnpm ci
+
+  lint-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 13-caching/react-app
+    needs:
+      - install-deps
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: ${{ inputs.pnpm-version }}
+          run_install: false
+
+      - name: Setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Download cached dependencies
+        uses: actions/cache@v6
+        if: ${{ inputs.use-cache }}
+        id: cache
+        with:
+          path: 13-caching/react-app/node_modules
+          key: ${{ needs.install-deps.outputs.deps-cache-key }}
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: pnpm ci
+
+      - name: Testing
+        run: pnpm test --run -- --coverage
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.test-report-key }}
+          path: 14-artifacts/react-app/coverage
+
+      - name: Linting
+        run: pnpm lint
+
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 13-caching/react-app
+    needs:
+      - install-deps
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: ${{ inputs.pnpm-version }}
+          run_install: false
+
+      - name: Setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Download cached dependencies
+        uses: actions/cache@v6
+        if: ${{ inputs.use-cache }}
+        id: cache
+        with:
+          path: 13-caching/react-app/node_modules
+          key: ${{ needs.install-deps.outputs.deps-cache-key }}
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: pnpm ci
+
+      - name: Building
+        run: pnpm build
+
+      - name: Upload build files
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.build-artifact-key }}
+          path: 14-artifacts/react-app/dist
+
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploying to nonprod
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ env.build-artifact-key }}
+          path: dist
+      - name: Show folder structure
+        run: ls -R
