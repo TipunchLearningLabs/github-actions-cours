@@ -16,7 +16,7 @@ jobs:
         os:
           - ubuntu-latest
         include:
-          - os: macos-latest
+          - os: ubuntu-latest
             node-version: 22.x
           - os: ubuntu-latest
             node-version: 25.x
