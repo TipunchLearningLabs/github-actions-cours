@@ -1,0 +1,50 @@
+name: Cache Node and NPM Dependencies
+description: "This action allows to cache both Node and NPM dependencies based on the package-lock.json file."
+
+inputs:
+  node-version:
+    description: NodeJS version to use
+    default: 26.x
+    required: false
+  pnpm-version:
+    description: Pnpm version to use
+    default: 12.x
+    required: false
+  working-dir:
+    description: "The working directory of the application"
+    required: false
+
+runs:
+  using: composite
+
+  steps:
+
+    - name: Setup NodeJS version - ${{ inputs.node-version }}
+      uses: actions/setup-node@v7
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v6
+      with:
+        version: ${{ inputs.pnpm-version }}
+        run_install: false
+
+    - name: Calculate cache key
+      id: cache-key
+      run: |
+        echo "CACHE_KEY=node-modules-${{ hashFiles('format({0}/{1}, inputs.working-dir, pnpm-lock.yaml)') }}
+      shell: bash
+
+    - name: Download cached dependencies
+      uses: actions/cache@v6
+      id: cache
+      with:
+        path: ${{ inputs.working-dir }}/node_modules
+        key: ${{ steps.cache-key.outputs.CACHE_KEY }}
+
+    - name: Install dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: pnpm ci
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
