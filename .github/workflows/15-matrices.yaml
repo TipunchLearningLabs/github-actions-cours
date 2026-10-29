@@ -2,6 +2,15 @@ name: 15 - Working with Matrices
 
 on:
   workflow_dispatch:
+    inputs:
+      use-cache:
+        description: "Whether to execute cache step"
+        type: boolean
+        default: true
+
+env:
+  build-artifact-key: app-${{github.sha }}
+  test-report-key: test-coverage-${{github.sha }}
 
 jobs:
   backwards-compatibility:
