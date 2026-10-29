@@ -6,7 +6,7 @@ on:
     inputs:
       target-env:
         type: environment
-        default: statging
+        default: staging
 
 jobs:
   echo:
