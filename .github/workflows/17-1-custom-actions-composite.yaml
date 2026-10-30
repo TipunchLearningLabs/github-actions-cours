@@ -1,0 +1,36 @@
+name: 17 - Custom Actions - Composite
+
+on:
+  workflow_dispatch:
+
+env:
+  working-directory: 17-custom-actions/react-app
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.working-directory }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node and NPM Dependencies
+        uses: ./.github/actions/composite-cache-deps
+        with:
+          node-version: 26.x
+          pnpm-version: 12.x
+          working-dir: ${{ env.working-directory }}
+
+      - name: Test
+        run: pnpm test --run
+
+      - name: Linting
+        run: pnpm lint
+
+      - name: Build
+        run: pnpm ci
+        working-directory: ${{ env.working-directory }}

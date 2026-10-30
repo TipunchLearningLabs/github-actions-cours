@@ -21,7 +21,7 @@ Si corepack n'est pas disponible, installez pnpm avec `npm install -g pnpm`.
 
 Une seule commande génère le projet ; avec pnpm, pas besoin du `--` qu'exige npm.
 
-```
+```bash
 pnpm create vite mon-projet --template react-ts
 cd mon-projet
 pnpm install
@@ -45,8 +45,13 @@ Pour créer le projet dans le dossier courant, remplacez le nom par `.` : `pnpm 
 
 Vitest est le lanceur de tests natif de Vite : il réutilise la même config. Pour tester des composants React, on ajoute jsdom (un DOM simulé) et Testing Library.
 
-```
-pnpm add -D vitest jsdom @testing-library/react @testing-library/jest-dom @testing-library/user-event
+```bash
+pnpm add -D \
+  vitest \
+  jsdom \
+  @testing-library/react \
+  @testing-library/jest-dom \
+  @testing-library/user-event
 ```
 
 | Paquet                      | Rôle                                     |
@@ -59,7 +64,7 @@ pnpm add -D vitest jsdom @testing-library/react @testing-library/jest-dom @testi
 
 Ajoutez un bloc `test` dans `vite.config.ts` :
 
-```
+```ts
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -76,7 +81,7 @@ export default defineConfig({
 
 Créez `src/test/setup.ts` :
 
-```
+```ts
 import { afterEach } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
