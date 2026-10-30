@@ -33,7 +33,7 @@ runs:
     - name: Calculate cache key
       id: cache-key
       run: |
-        echo "CACHE_KEY=node-modules-${{ hashFiles('format({0}/{1}', inputs.working-dir, 'pnpm-lock.yaml') }}"
+        echo "CACHE_KEY=node-modules-${{ hashFiles('format({0}/{1}', inputs.working-dir, 'pnpm-lock.yaml') }}" >> "$GITHUB_OUTPUT"
       shell: bash
 
     - name: Download cached dependencies
