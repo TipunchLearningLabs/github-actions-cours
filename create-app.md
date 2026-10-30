@@ -1,6 +1,6 @@
 # Créer un projet Vite avec pnpm, Vitest et oxlint
 
-![img]()29 oct. 2026 · @Xavier Gueret
+29 oct. 2026 · Xavier Gueret
 
 Ce guide crée un projet Vite (React + TypeScript) avec pnpm, puis ajoute Vitest pour les tests et oxlint, le linter écrit en Rust du projet Oxc. Tout se fait en ligne de commande.
 
@@ -8,14 +8,14 @@ Ce guide crée un projet Vite (React + TypeScript) avec pnpm, puis ajoute Vitest
 
 Vite demande Node.js 20.19+ ou 22.12+ ([doc Vite](https://vite.dev/guide/)). Vérifiez votre version, puis activez pnpm via corepack (livré avec Node) :
 
-```
+```bash
 node -v                 # doit afficher v20.19+ ou v22.12+
 corepack enable         # active pnpm sans installation globale
 corepack prepare pnpm@latest --activate
 pnpm -v
 ```
 
-Si corepack n'est pas disponible, installez pnpm avec `npm install -g pnpm`.
+Si corepack n'est pas disponible, installez pnpm avec le script officiel : `curl -fsSL https://get.pnpm.io/install.sh | sh -`.
 
 ## 2. Créer le projet Vite
 
@@ -91,27 +91,45 @@ afterEach(() => {
 })
 ```
 
-Pour que TypeScript reconnaisse `describe`, `it` et `expect` sans import, ajoutez dans `tsconfig.app.json` :
+Pour que TypeScript reconnaisse `describe`, `it` et `expect` sans import, étendez le tableau `types` du bloc `compilerOptions` existant de `tsconfig.app.json` (ne remplacez pas le bloc entier) :
 
-```
-"compilerOptions": {
-  "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]
+```json
+{
+  "compilerOptions": {
+    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]
+  }
 }
 ```
 
-Premier test, `src/App.test.tsx` :
+Premier test, `src/App.test.tsx` (le titre et le compteur viennent du template Vite) :
 
-```
+```tsx
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import App from './App'
 
 describe('App', () => {
-  it('affiche le titre', () => {
+  it('renders the heading', () => {
     render(<App />)
-    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+
+    expect(
+      screen.getByRole('heading', { name: 'Get started' }),
+    ).toBeInTheDocument()
+  })
+
+  it('increments the counter on click', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const button = screen.getByRole('button', { name: /count is 0/i })
+    await user.click(button)
+
+    expect(button).toHaveTextContent('Count is 1')
   })
 })
 ```
+
+Sans au moins un fichier `*.test.*`, `pnpm test:run` échoue avec `No test files found`.
 
 Optionnel : `pnpm add -D @vitest/coverage-v8 @vitest/ui` pour la couverture de code et l'interface web.
 
@@ -119,14 +137,14 @@ Optionnel : `pnpm add -D @vitest/coverage-v8 @vitest/ui` pour la couverture de c
 
 C'est bien oxlint : un linter JavaScript/TypeScript écrit en Rust par le projet [Oxc](https://oxc.rs/docs/guide/usage/linter/quickstart), beaucoup plus rapide qu'ESLint et compatible avec la plupart de ses règles.
 
-```
+```bash
 pnpm add -D oxlint
 pnpm exec oxlint --init     # crée .oxlintrc.json avec les valeurs par défaut
 ```
 
 Adaptez ensuite `.oxlintrc.json` (les commentaires y sont autorisés) :
 
-```
+```json
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["react", "typescript", "vitest", "jsx-a11y"],
@@ -142,9 +160,9 @@ Adaptez ensuite `.oxlintrc.json` (les commentaires y sont autorisés) :
 
 Le template Vite installe ESLint par défaut. Si oxlint vous suffit, retirez-le :
 
-```
+```bash
 pnpm remove eslint @eslint/js eslint-plugin-react-hooks eslint-plugin-react-refresh globals typescript-eslint
-rm eslint.config.js
+trash eslint.config.js
 ```
 
 Pour garder ESLint à côté, `eslint-plugin-oxlint` désactive dans ESLint les règles déjà couvertes par oxlint.
@@ -157,7 +175,7 @@ Optionnel : le même projet propose Oxfmt, un formateur compatible Prettier (`pn
 
 Remplacez le bloc `scripts` de `package.json` :
 
-```
+```json
 "scripts": {
   "dev": "vite",
   "build": "tsc -b && vite build",
@@ -184,9 +202,9 @@ Remplacez le bloc `scripts` de `package.json` :
 
 ## 6. Récapitulatif
 
-Toutes les commandes à la suite ; il reste ensuite à éditer `vite.config.ts`, `src/test/setup.ts`, `tsconfig.app.json`, `.oxlintrc.json` et les scripts comme décrit plus haut.
+Toutes les commandes à la suite ; il reste ensuite à éditer `vite.config.ts`, `tsconfig.app.json`, `.oxlintrc.json` et les scripts, et à créer `src/test/setup.ts` et `src/App.test.tsx`, comme décrit plus haut.
 
-```
+```bash
 corepack enable
 pnpm create vite mon-projet --template react-ts
 cd mon-projet
@@ -201,7 +219,7 @@ pnpm exec oxlint --init
 
 # Optionnel : retirer ESLint
 pnpm remove eslint @eslint/js eslint-plugin-react-hooks eslint-plugin-react-refresh globals typescript-eslint
-rm eslint.config.js
+trash eslint.config.js
 
 # Vérifier
 pnpm lint
