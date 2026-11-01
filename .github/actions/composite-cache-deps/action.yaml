@@ -12,8 +12,12 @@ inputs:
     required: false
   working-dir:
     description: "The working directory of the application"
+    default: .
     required: false
-
+  target-env:
+    description: '"dev" or "prod". Controls whether dev dependencies are installed'
+    default: dev
+    required: false
 runs:
   using: composite
 
@@ -33,7 +37,7 @@ runs:
     - name: Calculate cache key
       id: cache-key
       run: |
-        echo "CACHE_KEY=node-modules-${{ hashFiles('format({0}/{1}', inputs.working-dir, 'pnpm-lock.yaml') }}" >> "$GITHUB_OUTPUT"
+        echo "CACHE_KEY=node-modules-${{ inputs.target-env }}-${{ hashFiles('format({0}/pnpm-lock.yaml', inputs.working-dir) }}" >> "$GITHUB_OUTPUT"
       shell: bash
 
     - name: Download cached dependencies
@@ -45,6 +49,6 @@ runs:
 
     - name: Install dependencies
       if: steps.cache.outputs.cache-hit != 'true'
-      run: pnpm ci
+      run: ${{ inputs.target-env == 'dev' && 'pnpm ci' || 'pnpm ci --prod' }}
       shell: bash
-      working-directory: ${{ inputs.working-directory }}
+      working-directory: ${{ inputs.working-dir }}
