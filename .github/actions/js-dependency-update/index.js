@@ -33,7 +33,7 @@ async function run() {
     core.info(`[js-dependency-update] : working directory is ${workingDir}`);
 
 
-    await exec.exec('pnpm upadate', [], {
+    await exec.exec('pnpm update', [], {
       cwd: workingDir
     });
 
