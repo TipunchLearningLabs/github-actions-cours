@@ -26,6 +26,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 12.x        # react-app/package.json has no "packageManager" field, so the version is required
+          run_install: false
+
       - name: Check for dependency update
         uses: ./.github/actions/js-dependency-update
         with:
