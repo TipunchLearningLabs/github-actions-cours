@@ -13,12 +13,12 @@ async function run() {
 
     //core.setSecret(ghToken);
 
-    if (!validateBranchName({ baseBranch: baseBranch })) {
+    if (!validateBranchName({ branchName: baseBranch })) {
       core.setFailed("Invalid base-branch name. Branch name should include only characters, numbers, dots, hyphens, underscores, and forward slashes.");
       throw Error();
     }
 
-    if (!validateBranchName({ targetBranch: targetBranch })) {
+    if (!validateBranchName({ branchName: targetBranch })) {
       core.setFailed("Invalid target-branch name. Branch name should include only characters, numbers, dots, hyphens, underscores, and forward slashes.");
       throw Error();
     }
@@ -37,7 +37,7 @@ async function run() {
       cwd: workingDir
     });
 
-    const gitStatus = exec.getExecOutput('git status -s package*.json', [], {
+    const gitStatus = await exec.getExecOutput('git status -s package*.json', [], {
       cwd: workingDir
     });
 
