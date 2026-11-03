@@ -9,7 +9,7 @@ on:
         default: main
       target-branch:
         type: string
-        default: update-dedpendencies
+        default: update-dependencies
       working-directory:
         type: string
         default: 17-custom-actions/react-app
