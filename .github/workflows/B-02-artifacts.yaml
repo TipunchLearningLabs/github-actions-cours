@@ -24,14 +24,12 @@ jobs:
           pnpm-version: 12.x
           working-dir: ${{ env.working-directory }}
       - name: Test
-        run: |
-          pnpm test --run -- --coverage
-          ls
+        run: pnpm test:coverage
 
       - name: Upload test results
         uses: actions/upload-artifact@v7
         with:
           name: ${{ env.test-report-key }}
-          path: ./coverage
+          path: ${{ env.working-directory }}/coverage
       - name: Linting
         run: pnpm lint
