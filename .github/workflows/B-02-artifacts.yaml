@@ -1,0 +1,34 @@
+name: B - 02 - artifacts
+
+on:
+  workflow_dispatch:
+
+env:
+  build-artifact-key: app-${{ github.sha }}
+  test-report-key: test-coverage-${{ github.sha }}
+  working-directory: simple-crm
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.working-directory }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node et PNPM dependencies
+        uses: ./.github/actions/composite-cache-deps
+        with:
+          node-version: 26.x
+          pnpm-version: 12.x
+          working-dir: ${{ env.working-directory }}
+      - name: Test
+        run: pnpm test --run -- --coverage
+      - name: Upload test results
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.test-report-key }}
+          path: ./coverage
+      - name: Linting
+        run: pnpm lint
