@@ -24,7 +24,10 @@ jobs:
           pnpm-version: 12.x
           working-dir: ${{ env.working-directory }}
       - name: Test
-        run: pnpm test --run -- --coverage
+        run: |
+          pnpm test --run -- --coverage
+          ls
+
       - name: Upload test results
         uses: actions/upload-artifact@v7
         with:
