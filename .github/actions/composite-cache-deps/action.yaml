@@ -1,33 +1,54 @@
-name: Cache Node and NPM Dependencies
-description: "This action allows to cache both Node and NPM dependencies based on the package-lock.json file."
+name: Setup Node and cache pnpm dependencies
+description: "Set up Node.js and pnpm, cache node_modules, and install dependencies on cache miss."
 
 inputs:
   node-version:
-    description: NodeJS version to use
-    default: 26.x
+    description: "Node.js version to use"
+    default: "26.x"
     required: false
+
   pnpm-version:
-    description: Pnpm version to use
-    default: 12.x
+    description: "pnpm version to use"
+    default: "12.x"
     required: false
+
   working-dir:
-    description: "The working directory of the application"
-    default: .
+    description: "Application directory relative to the repository root"
+    default: "."
     required: false
+
   target-env:
     description: '"dev" or "prod". Controls whether dev dependencies are installed'
-    default: dev
+    default: "dev"
     required: false
 
 runs:
   using: composite
-
   steps:
+    - name: Validate inputs
+      shell: bash
+      working-directory: ${{ inputs.working-dir }}
+      env:
+        TARGET_ENV: ${{ inputs.target-env }}
+      run: |
+        case "$TARGET_ENV" in
+          dev|prod) ;;
+          *)
+            echo "::error::target-env must be 'dev' or 'prod'"
+            exit 1
+            ;;
+        esac
 
-    - name: Setup NodeJS version - ${{ inputs.node-version }}
+        if [[ ! -f pnpm-lock.yaml ]]; then
+          echo "::error::pnpm-lock.yaml is missing from working-dir"
+          exit 1
+        fi
+
+    - name: Setup Node.js
       uses: actions/setup-node@v7
       with:
         node-version: ${{ inputs.node-version }}
+        package-manager-cache: false
 
     - name: Setup pnpm
       uses: pnpm/action-setup@v6
@@ -35,21 +56,29 @@ runs:
         version: ${{ inputs.pnpm-version }}
         run_install: false
 
-    - name: Calculate cache key
-      id: cache-key
-      run: |
-        echo "CACHE_KEY=node-modules-${{ inputs.target-env }}-${{ hashFiles('format({0}/pnpm-lock.yaml', inputs.working-dir) }}" >> "$GITHUB_OUTPUT"
+    - name: Get installed versions
+      id: versions
       shell: bash
+      run: |
+        echo "node=$(node --version)" >> "$GITHUB_OUTPUT"
+        echo "pnpm=$(pnpm --version)" >> "$GITHUB_OUTPUT"
 
-    - name: Download cached dependencies
-      uses: actions/cache@v6
+    - name: Restore node_modules cache
       id: cache
+      uses: actions/cache@v6
       with:
         path: ${{ inputs.working-dir }}/node_modules
-        key: ${{ steps.cache-key.outputs.CACHE_KEY }}
+        key: node-modules-v1-${{ runner.os }}-${{ runner.arch }}-node-${{ steps.versions.outputs.node }}-pnpm-${{ steps.versions.outputs.pnpm }}-${{ inputs.target-env }}-${{ inputs.working-dir }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.working-dir)) }}
 
     - name: Install dependencies
       if: steps.cache.outputs.cache-hit != 'true'
-      run: ${{ inputs.target-env == 'dev' && 'pnpm ci' || 'pnpm ci --prod' }}
       shell: bash
       working-directory: ${{ inputs.working-dir }}
+      env:
+        TARGET_ENV: ${{ inputs.target-env }}
+      run: |
+        if [[ "$TARGET_ENV" == "prod" ]]; then
+          pnpm ci --prod
+        else
+          pnpm ci --prod=false
+        fi
