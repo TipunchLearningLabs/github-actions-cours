@@ -1,4 +1,4 @@
-name: B - 04 -  use reusable
+name: B - 04 - 1 - use reusable
 
 on:
   workflow_dispatch:
