@@ -1,0 +1,35 @@
+name: B - 04 - 1 - reusable
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: The working directory
+        required: true
+        type: string
+      build-artifact-key:
+        description: The build artifact key
+        required: true
+        type: string
+      script-file:
+        description: file
+        type: string
+        required: false
+        default: 'none'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Get build artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ inputs.build-artifact-key }}
+          path: ${{ inputs.working-directory }}
+      - name: Output contents
+        run: ls -la
+      - name: Output filename
+        run: echo ${{ inputs.script-file }}
+      - name: Deploy
+        run: echo "Deploying..."

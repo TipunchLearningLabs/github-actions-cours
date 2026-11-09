@@ -1,0 +1,74 @@
+name: B - 04 -  use reusable
+
+on:
+  workflow_dispatch:
+
+env:
+  build-artifact-key: app-${{ github.sha }}
+  test-report-key: test-coverage-${{ github.sha }}
+  working-directory: simple-crm
+
+defaults:
+  run:
+    working-directory: simple-crm
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Setup Node et PNPM dependencies
+        uses: ./.github/actions/composite-cache-deps
+        with:
+          node-version: 26.x
+          pnpm-version: 12.x
+          working-dir: ${{ env.working-directory }}
+      - name: Linting
+        run: pnpm lint
+      - name: Test
+        run: pnpm test:coverage
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.test-report-key }}
+          path: ${{ env.working-directory }}/coverage
+          if-no-files-found: warn
+  build:
+    runs-on: ubuntu-latest
+    needs:
+      - lint-test
+    outputs:
+      script-file: ${{ steps.publish.outputs.script-file }}
+      artifact-key: ${{ env.build-artifact-key }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Setup Node et PNPM dependencies
+        uses: ./.github/actions/composite-cache-deps
+        with:
+          node-version: 26.x
+          pnpm-version: 12.x
+          working-dir: ${{ env.working-directory }}
+      - name: Building
+        run: pnpm build
+      - name: Publish JS filename
+        id: publish
+        run: find dist/assets -type f -name '*.js' -execdir echo 'script-file={}' ';' >> "$GITHUB_OUTPUT"
+      - name: Upload dist
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.build-artifact-key }}
+          path: ${{ env.working-directory }}/dist
+          if-no-files-found: error
+
+  deploy:
+    needs:
+      - build
+    uses: ./.github/workflows/B-04-1-reusable.yaml
+    with:
+      working-directory: simple-crm/dist
+      build-artifact-key: ${{ needs.build.outputs.artifact-key }}
+      script-file: ${{ needs.build.outputs.script-file }}
